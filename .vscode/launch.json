@@ -1,0 +1,13 @@
+{
+  "configurations": [
+    {"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}","console":"integratedTerminal"},
+    {
+      "name": "Python Debug",
+      "type": "debugpy",  // 新版需用 debugpy
+      "request": "launch",
+      "program": "${file}",
+      "pythonPath": "~/Documents/github/okex-trans4/trans-watcher/fastapi_env/bin/python",  // 关键字段
+      "args": ["--param1", "value1"]           // 可选：调试参数
+    }
+  ]
+}
