@@ -7,17 +7,9 @@ from fastapi import Depends, FastAPI, HTTPException, Request, Response, WebSocke
 from fastapi_limiter import FastAPILimiter
 from fastapi_limiter.depends import RateLimiter, WebSocketRateLimiter
 from fastapi.responses import JSONResponse
+from middleware import app_lifespan 
 
-
-@asynccontextmanager
-async def lifespan(_: FastAPI):
-    redis_connection = redis.from_url("redis://localhost:6379", encoding="utf8")
-    await FastAPILimiter.init(redis_connection)
-    yield
-    await FastAPILimiter.close()
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=app_lifespan)
 
 
 async def fallback_to_index(request: Request, response: Response, pexpire: int):

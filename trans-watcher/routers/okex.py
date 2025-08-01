@@ -63,6 +63,7 @@ async def collect_candles(candle_request: CandleRequest):
         )
         if result.get('success'):
             # Handle MongoDB storage if applicable
+            
             return result
         raise HTTPException(status_code=404, detail=result.get('error'))
     except Exception as e:

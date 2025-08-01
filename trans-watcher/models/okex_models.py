@@ -42,7 +42,6 @@ class CandleRequest(BaseModel):
         description="Time frame: 1m, 3m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 12h, 1d, 1w, 1M, 3M"
     )
     limit: int = Field(default=100, ge=1, le=300, description="Number of candles to fetch (1-300)")
-    save_to_db: bool = Field(default=True, description="Whether to save data to MongoDB")
 
 
 class CandleResponse(BaseModel):

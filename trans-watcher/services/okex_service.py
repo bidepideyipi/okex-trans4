@@ -101,16 +101,15 @@ class OKExService:
                 "error": str(e)
             }
     
-    def get_candlesticks(self, symbol: str, bar: str = "1m", limit: int = 100) -> Dict:
+    def get_candlesticks(self, symbol: str) -> Dict:
         """Get candlestick data for a symbol"""
         try:
-            result = self.market_api.get_candlesticks(instId=symbol, bar=bar, limit=str(limit))
+            result = self.market_api.get_candlesticks(instId=symbol, bar="1m", limit=str(100))
             if result and result.get('code') == '0' and result.get('data'):
                 return {
                     "success": True,
                     "data": result['data'],
                     "symbol": symbol,
-                    "bar": bar,
                     "timestamp": datetime.now().isoformat()
                 }
             else:
@@ -178,3 +177,5 @@ class OKExService:
                 "success": False,
                 "error": str(e)
             }
+# Global OKEX service instance
+okex_service = OKExService()

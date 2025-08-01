@@ -2,9 +2,10 @@
 Candles router for MongoDB operations
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from typing import Optional, List
 from services.mongodb_service import mongodb_service
+from services.okex_service import okex_service
 from models import CandleRequest
 
 router = APIRouter(
@@ -12,9 +13,6 @@ router = APIRouter(
     tags=["candles"],
     responses={404: {"description": "Not found"}},
 )
-
-# Use the global mongodb_service instance
-
 
 @router.get("/{symbol}")
 async def get_candles_from_db(
@@ -42,7 +40,26 @@ async def get_candles_from_db(
         raise HTTPException(status_code=500, detail=f"Error retrieving candles data: {str(e)}")
 
 
-@router.get("/{symbol}/latest")
+@router.get("/{symbol}/latest/okex")
+async def get_latest_candle_from_okex(symbol: str):
+    """Get the latest candle for a symbol from MongoDB"""
+    try:
+        result = okex_service.get_candlesticks(symbol=symbol)
+        
+        if result:
+            return {
+                "success": True,
+                "symbol": symbol,
+                "latest_candle": result
+            }
+        else:
+            raise HTTPException(status_code=404, detail=f"No candles found for {symbol}")
+            
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving latest candle: {str(e)}")
+    
+    
+@router.get("/{symbol}/latest/db")
 async def get_latest_candle_from_db(symbol: str):
     """Get the latest candle for a symbol from MongoDB"""
     try:
@@ -75,15 +92,13 @@ async def get_available_symbols():
         raise HTTPException(status_code=500, detail=f"Error retrieving symbols: {str(e)}")
 
 
-@router.post("/collect/{symbol}")
-async def collect_and_store_candles(symbol: str, candle_request: CandleRequest):
+@router.get("{symbol}/list")
+async def collect_and_store_candles(request: Request, symbol: str):
     """Collect candles from OKEx and store in MongoDB"""
     try:
+        result = okex_service.get_candlesticks(symbol= symbol)
         # This will be implemented to integrate with OKEx service
         # and store the data using MongoDB service
-        return {
-            "success": True,
-            "message": f"Collection endpoint for {symbol} - to be implemented"
-        }
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

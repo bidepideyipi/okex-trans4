@@ -3,11 +3,15 @@ FastAPI Demo with OKEx Integration and MongoDB Storage
 Main application file using organized structure with routers, services, and models
 """
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.responses import JSONResponse
+from fastapi_limiter.depends import RateLimiter
 import uvicorn
 from datetime import datetime
 from routers import items_router, okex_router, candles_router
 from models.okex_models import HealthCheckResponse
+from middleware import app_lifespan
+
 
 # Create FastAPI instance
 app = FastAPI(
@@ -15,7 +19,8 @@ app = FastAPI(
     description="A FastAPI demonstration with OKEx cryptocurrency API and MongoDB integration",
     version="2.0.0",
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
+    lifespan=app_lifespan 
 )
 
 # Include routers
@@ -50,8 +55,20 @@ async def health_check():
         timestamp=datetime.now().isoformat()
     )
 
+async def fallback_to_info(request: Request, response: Response, pexpire: int):
+    raise HTTPException(
+        430, "Too Many Requests", headers={}
+    )
+    
+@app.exception_handler(430)
+async def rate_limit_exceeded(request: Request, exc):
+    return JSONResponse(
+        status_code=200,
+        content={"msg": "请求过快"}
+    )
+    
 # Additional info endpoint
-@app.get("/info")
+@app.get("/info", dependencies=[Depends(RateLimiter(times=2, seconds=5, callback=fallback_to_info))])
 async def get_api_info():
     """Get API information and available endpoints"""
     return {
